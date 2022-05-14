@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <button id="likeBtn">点赞</button>
+    <button id="decrease">踩</button>
+    <button onclick="freshHandle()">刷新</button>
+    <p>一共收获了<span id="likedCount">0</span>个👍</p>
+    <br />
+    <div>
+      同源下，打开2个tab 一个是sharedWorker.html
+      一个是sharedWorker2.html，而在浏览器中只会存在一个shareWorker服务
+      chrome://inspect/#workers 可以查看
+      通过在a页面改变服务中的数据，在b页面重新读服务的数据时，拿到的就是最新的改变过的数据
+    </div>
+    <script>
+      let likeBtn = document.querySelector("#likeBtn");
+      let decreaseBtn = document.querySelector("#decrease");
+      let likedCountEl = document.querySelector("#likedCount");
+      console.log(window.SharedWorker);
+      let worker = new SharedWorker("./sharedWorker.js");
+      console.log("worker.port", worker);
+      worker.port.start();
+      likeBtn.addEventListener("click", function () {
+        worker.port.postMessage({ type: "increase", payload: { count: 666 } });
+      });
+      decreaseBtn.addEventListener("click", function () {
+        worker.port.postMessage({ type: "decrease", payload: { count: 666 } });
+      });
+      function freshHandle() {
+        console.log("share1");
+        worker.port.postMessage({ type: "fresh", payload: { count: 666 } });
+      }
+
+      worker.port.onmessage = function (val) {
+        console.log("收到worker的消息", val);
+        likedCountEl.innerHTML = val.data;
+      };
+    </script>
+  </body>
+</html>

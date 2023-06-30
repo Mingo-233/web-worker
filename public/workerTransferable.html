@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+</head>
+
+<body>
+  <button onclick="transferable()" style="padding: 10px; margin: 10px 0">开始转移</button>
+  <button onclick="transferableFnc()" style="padding: 10px; margin: 10px 0">开始转移 转移函数</button>
+
+
+  <script>
+    const worker = new Worker("./workerTransferable.js"); // 创建了一个worker
+    const myData = { message: 'Hello, Web Worker!' };
+    const myData2 = { person: 'aa', age: 18 };
+    myData2.other = myData2
+    function myFunction(a, b) {
+      return a + b;
+    }
+    worker.onmessage = function (messageEvent) {
+      console.log(messageEvent);
+      console.log("done,耗时：" + messageEvent.data + "ms");
+    };
+    function transferableFnc() {
+      // 将函数转换为字符串
+      const functionString = myFunction.toString();
+
+      // 使用 TextEncoder 将字符串编码为 Uint8Array
+      const encoder = new TextEncoder();
+      const encodedData = encoder.encode(myFunction);
+
+      // 从 Uint8Array 获取 ArrayBuffer
+      const arrayBuffer = encodedData.buffer;
+
+      // 将 ArrayBuffer 发送给其他线程
+      worker.postMessage(arrayBuffer, [arrayBuffer]);
+    }
+    function transferable() {
+      // const buffer = new ArrayBuffer(4);
+      // // 在数组缓冲区中存储数据
+      // const view = new DataView(buffer);
+      // view.setInt32(0, myData.message.length, true);
+
+      const serializedData = JSON.stringify(myData);
+      const buffer = new TextEncoder().encode(serializedData);
+      console.log(buffer);
+      worker.postMessage(buffer, [buffer.buffer]);
+      // 将数据和数组缓冲区发送给 Web Worker
+      // worker.postMessage({ data: myData, buffer: buffer }, [buffer]);
+
+    }
+
+    // 关闭worker
+    // worker.terminate();
+
+
+
+  </script>
+</body>
+
+</html>

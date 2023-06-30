@@ -8,6 +8,7 @@ self.onconnect = function (e) {
   port.postMessage(val);
 
   port.onmessage = (messageEvent) => {
+    console.log(messageEvent);
     const { type, payload } = messageEvent.data;
     console.log(type);
     switch (type) {
